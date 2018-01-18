@@ -1,0 +1,41 @@
+version: "3.2"
+
+services:
+  traefik:
+    image: traefik
+    command: --web --docker --docker.swarmmode --docker.watch --docker.domain=reynn.net --logLevel=DEBUG
+    env_file: /docker/traefik/traefik.env
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 8080
+        published: 8080
+        protocol: tcp
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /docker/traefik/traefik.toml:/traefik.toml:ro
+      - /docker/traefik/acme.json:/acme.json
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - public
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+
+networks:
+  public:
+    driver: overlay
+    ipam:
+      driver: default
+      config:
+      - subnet: 10.1.0.0/24

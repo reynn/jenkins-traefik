@@ -1,0 +1,21 @@
+version: "3.2"
+
+services:
+  jenkins:
+    image: jenkins:2.102-alpine
+    env_file: /docker/jenkins/jenkins.env
+    networks:
+      - traefik_public
+    expose:
+      - 8080
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:jenkins.reynn.net
+        - traefik.docker.network=traefik_public
+        - traefik.default.protocol=http
+        - traefik.port=8080
+    volumes:
+      - /var/jenkins_home:/var/jenkins_home
+networks:
+  traefik_public:
+    external: true
